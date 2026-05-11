@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir)",
+      "Bash(npm --version)",
+      "Bash(npx --yes create-next-app@latest . --typescript --tailwind --eslint --app --no-src-dir --no-turbopack --import-alias \"@/*\" --use-npm)",
+      "Bash(mv _tmp_docs ../_nextreach_docs_backup && ls -la)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\Rumeysa\\Desktop"
+    ]
+  }
+}
