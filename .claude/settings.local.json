@@ -4,7 +4,16 @@
       "Bash(dir)",
       "Bash(npm --version)",
       "Bash(npx --yes create-next-app@latest . --typescript --tailwind --eslint --app --no-src-dir --no-turbopack --import-alias \"@/*\" --use-npm)",
-      "Bash(mv _tmp_docs ../_nextreach_docs_backup && ls -la)"
+      "Bash(mv _tmp_docs ../_nextreach_docs_backup && ls -la)",
+      "Bash(npm install *)",
+      "Bash(npm uninstall *)",
+      "Bash(npx --yes shadcn@latest init -d)",
+      "Bash(npx --yes shadcn@latest add input card badge textarea dialog scroll-area table separator label --yes)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(git remote *)",
+      "Bash(netstat -ano)",
+      "Bash(curl -sS -o /dev/null -w \"HTTP %{http_code}  size %{size_download}B  time %{time_total}s\\\\n\" http://localhost:3000/)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Rumeysa\\Desktop"
