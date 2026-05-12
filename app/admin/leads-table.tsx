@@ -1,5 +1,6 @@
 "use client";
 
+import { Inbox } from "lucide-react";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -36,13 +37,36 @@ function fmtTime(iso: string): string {
   });
 }
 
+function relativeTime(iso: string): string {
+  const now = Date.now();
+  const then = new Date(iso).getTime();
+  const diff = Math.floor((now - then) / 1000);
+  if (diff < 60) return "az önce";
+  if (diff < 3600) return Math.floor(diff / 60) + " dk önce";
+  if (diff < 86400) return Math.floor(diff / 3600) + " saat önce";
+  if (diff < 7 * 86400) return Math.floor(diff / 86400) + " gün önce";
+  const d = new Date(iso);
+  return d.toLocaleDateString("tr-TR", { day: "2-digit", month: "short" });
+}
+
+function Missing() {
+  return <span className="text-zinc-400 italic">—</span>;
+}
+
 export function LeadsTable({ leads }: { leads: LeadRow[] }) {
   const [selected, setSelected] = useState<LeadRow | null>(null);
 
   if (leads.length === 0) {
     return (
-      <div className="rounded-xl border bg-white p-12 text-center text-zinc-500">
-        Henüz talep yok. Landing page'den chatbot üzerinden bir talep oluşturup tekrar bakın.
+      <div className="rounded-xl border bg-white px-6 py-16 text-center">
+        <div className="mx-auto size-12 rounded-full bg-zinc-100 grid place-items-center mb-4">
+          <Inbox className="size-6 text-zinc-400" aria-hidden />
+        </div>
+        <h3 className="font-medium text-zinc-800">Henüz talep yok</h3>
+        <p className="text-sm text-zinc-500 mt-1.5 max-w-sm mx-auto">
+          Landing page'deki chatbot üzerinden bir talep oluştur, burada
+          skoruyla birlikte listelensin.
+        </p>
       </div>
     );
   }
@@ -75,16 +99,19 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
                     {l.score}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-sm text-zinc-600 whitespace-nowrap">
-                  {fmtTime(l.created_at)}
+                <TableCell
+                  className="text-sm text-zinc-600 whitespace-nowrap"
+                  title={fmtTime(l.created_at)}
+                >
+                  {relativeTime(l.created_at)}
                 </TableCell>
-                <TableCell className="font-medium">{l.company ?? "—"}</TableCell>
-                <TableCell className="text-sm">{l.email ?? "—"}</TableCell>
-                <TableCell className="text-sm">{l.role ?? "—"}</TableCell>
-                <TableCell className="text-sm">{l.team_size ?? "—"}</TableCell>
-                <TableCell className="text-sm">{l.urgency ?? "—"}</TableCell>
+                <TableCell className="font-medium">{l.company ?? <Missing />}</TableCell>
+                <TableCell className="text-sm">{l.email ?? <Missing />}</TableCell>
+                <TableCell className="text-sm">{l.role ?? <Missing />}</TableCell>
+                <TableCell className="text-sm">{l.team_size ?? <Missing />}</TableCell>
+                <TableCell className="text-sm">{l.urgency ?? <Missing />}</TableCell>
                 <TableCell className="text-sm max-w-[260px] truncate">
-                  {l.intent ?? "—"}
+                  {l.intent ?? <Missing />}
                 </TableCell>
               </TableRow>
             ))}

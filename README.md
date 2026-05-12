@@ -77,6 +77,7 @@ lib/
   services/leads.ts          → insertLead / listLeads (Supabase erişimi sadece burada).
   services/lead-score.ts     → Deterministik 0-100 skor.
   services/rate-limit.ts     → IP-keyed sayaç (Upstash). Redis yoksa pass-through.
+  services/pre-filter.ts     → Gemini öncesi regex quality gate (spam/mash).
 
 prompts/chatbot-system.md    → Türkçe system prompt (kişilik, ton, kurallar, açılış).
 
@@ -156,18 +157,27 @@ Filtre/arama eklemedim çünkü ilk gün hacim düşük olacak; sıralama yeter.
 
 ### Spam / kötü niyetli kullanım
 
-Üç katman:
+Dört katman, ucuzdan pahalıya doğru:
 
 1. **Upstash Redis rate limit**: IP başına 5 dakikada 20 mesaj. Aşılırsa 429.
 2. **Honeypot field**: gizli `<input name="website">`. Doluysa bot — kullanıcıya
    sahte 200 dön, talep DB'ye yazılmaz (bot anlamasın).
 3. **Form-fill timing**: ilk mesaj widget açılışından `< 2sn` sonra geldiyse bot.
    Sadece ilk turn'a uygulanır (sonra hızlı yazmak meşru).
+4. **Pre-filter** (`lib/services/pre-filter.ts`): Gemini çağrısından önce
+   regex tabanlı kalite kontrolü. Açık spam pattern'i (5+ tekrar karakter,
+   sadece noktalama, klavye mash, <2 karakter) engellenir; nazik bir "Sizi
+   anlayamadım" cevabı döner. **State machine değil** — engellenmiş mesaj
+   history'ye eklenmez, bot bunu hatırlamaz, sonraki gerçek mesajda LLM-driven
+   akış aynen sürer. Kısa Türkçe cevaplar (`evet`, `ok`, `tamam`, `yok`, `peki`)
+   whitelist'te, her zaman geçer.
 
-Bunlara ek olarak Gemini `safetySettings` BLOCK_NONE çekildi — false positive'i
-azaltıyor ama her şeyin tek katman çöktüğünde rate limit + honeypot zaten ana
-hat. Spam_flag kolonu DB'de var ama şu an sadece honeypot setlemiyor — geriye
-dönük analiz için hazır.
+Ek olarak Gemini `safetySettings` tüm 4 kategoride `BLOCK_NONE` — sales
+context'inde "frustrated customer" gibi normal şeylerde false positive
+tetiklenmesin diye. Ana spam koruması yukarıdaki 4 katman.
+
+`spam_flag` kolonu DB'de var (geriye dönük analiz için), şu an sadece honeypot
+tetikleyebilir.
 
 ### Ziyaretçi cevap vermek istemezse
 

@@ -64,6 +64,17 @@ export default async function AdminPage({
     leads = [];
   }
 
+  const totalLeads = leads.length;
+  const avgScore =
+    totalLeads > 0
+      ? Math.round(leads.reduce((s, l) => s + l.score, 0) / totalLeads)
+      : 0;
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const todaysLeads = leads.filter(
+    (l) => new Date(l.created_at).getTime() >= todayStart.getTime(),
+  ).length;
+
   return (
     <div className="min-h-screen bg-zinc-50">
       <header className="border-b bg-white">
@@ -71,7 +82,7 @@ export default async function AdminPage({
           <div>
             <h1 className="font-semibold tracking-tight">İletişim Talepleri</h1>
             <p className="text-xs text-zinc-500 mt-0.5">
-              Skora göre sıralı · toplam {leads.length} talep
+              Skora göre sıralı · toplam {totalLeads} talep
             </p>
           </div>
           <form action={logoutAction}>
@@ -82,7 +93,15 @@ export default async function AdminPage({
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-6">
+      <main className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+        {!loadError && (
+          <div className="grid grid-cols-3 gap-3 sm:gap-4">
+            <Stat label="Toplam Lead" value={totalLeads.toString()} />
+            <Stat label="Ortalama Skor" value={avgScore.toString()} suffix="/100" />
+            <Stat label="Bugünkü Lead" value={todaysLeads.toString()} />
+          </div>
+        )}
+
         {loadError ? (
           <div className="rounded-md border border-destructive/40 bg-destructive/5 text-destructive p-4 text-sm">
             Talepler yüklenemedi: {loadError}
@@ -91,6 +110,22 @@ export default async function AdminPage({
           <LeadsTable leads={leads} />
         )}
       </main>
+    </div>
+  );
+}
+
+function Stat({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
+  return (
+    <div className="rounded-xl border bg-white p-4 sm:p-5">
+      <div className="text-xs text-zinc-500 uppercase tracking-wide">{label}</div>
+      <div className="mt-1.5 text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900">
+        {value}
+        {suffix && (
+          <span className="text-sm sm:text-base text-zinc-400 ml-1 font-normal">
+            {suffix}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
