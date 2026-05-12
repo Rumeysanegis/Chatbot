@@ -219,4 +219,4 @@ otomatik düşük skor demek.
 
 ## Toplam süre
 
-**~5 saat**
+**~5 saat 30 dakika**
