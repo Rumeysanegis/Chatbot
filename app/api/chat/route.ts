@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { runChatTurn } from "@/lib/services/chat";
+import { preFilter, preFilterReply } from "@/lib/services/pre-filter";
 import { checkRateLimit } from "@/lib/services/rate-limit";
 
 export const runtime = "nodejs";
@@ -75,6 +76,17 @@ export async function POST(req: NextRequest) {
       { error: "rate_limited", resetInSeconds: rl.resetInSeconds },
       { status: 429 },
     );
+  }
+
+  // Pre-filter BEFORE Gemini: cheap regex check for gibberish / mash / pure
+  // punctuation. Returns a polite canned reply without burning quota.
+  const pf = preFilter(message);
+  if (!pf.ok) {
+    console.log("[pre-filter] rejected:", pf.reason, "msg:", JSON.stringify(message.slice(0, 40)));
+    return NextResponse.json({
+      assistantText: preFilterReply(pf.reason),
+      history, // unchanged — Gemini never sees this turn
+    });
   }
 
   try {

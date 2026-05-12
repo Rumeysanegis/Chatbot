@@ -1,11 +1,11 @@
 # NextReach Chatbot
 
-NextReach landing page'i için, "Contact Sales" formunun yerine konulmak üzere
-yapılmış bir chatbot iletişim agent'ı. Ziyaretçi konuşarak ihtiyacını anlatır,
+NextReach landing page'i için, "Contact Sales" formunun yerine konulmak üzere yapılmış bir chatbot iletişim agent'ı. Ziyaretçi konuşarak ihtiyacını anlatır,
 bot deterministik bir kalite skoruyla iletişim talebi oluşturur, satış ekibi
 basit bir admin view üzerinden gelen talepleri görür.
 
-**Yayında:** _(deploy bu turda yapılmadı — README sonundaki "Yapılmadı" bölümüne bakın.)_
+**Yayında:** https://nextreach-chatbot-nine.vercel.app
+**Admin:** https://nextreach-chatbot-nine.vercel.app/admin (parola Vercel env'inde `ADMIN_PASSWORD`)
 
 ---
 
@@ -16,7 +16,7 @@ npm install
 cp .env.example .env.local
 # .env.local'ı doldurun (aşağıdaki env vars bölümüne bakın)
 
-# Supabase'de tabloyu oluşturun: supabase/schema.sql'i SQL Editor'a yapıştırıp çalıştırın.
+
 
 npm run dev
 # http://localhost:3000 → landing
@@ -144,9 +144,6 @@ size özel teklif hazırlar"). Tone'u koda gömmedim — prompt'ta.
 Yukarıdaki deterministik 0-100 skor + admin sıralaması. Subjektif "model bana iyi
 göründü" sinyaline güvenmedim çünkü LLM her zaman pozitif eğilimli.
 
-Mevcut formülün avantajı: 6 saatte hesaplaması ve haklılığını savunması kolay.
-"Email iş emaili" ağırlığı 15 verdim — biri gmail'le yazıp "ben CMO'yum"
-diyorsa hâlâ değerlidir, sadece doğrulanabilirliği düşer.
 
 ### Admin view'de ne göstermeli
 
@@ -186,16 +183,21 @@ otomatik düşük skor demek.
 
 ## 6 saatte yapamadıklarım / daha fazla zamanda eklerdim
 
-- **Deploy.** Bu turda Vercel deploy'a vakit kalmadı; CLAUDE.md kuralı "2. saatte
-  deploy" idi ama Supabase/Upstash hesap kurulum süresi planlanandan uzun sürdü.
-  Bir sonraki adım: `npx vercel` + env vars panelden enjekte.
-- **Test framework yok.** Bilerek (out of scope). Tek istisna: `lead-score.ts`
-  için Vitest ile 10 dakikalık birim test eklenebilir — saf fonksiyon.
+- **Bot uçtan uca live testi** Gemini API free tier'da (Tier 0) günlük 20 istek
+  limitine takıldığı için tam yapılamadı (Tier 1 normalde 500/gün — billing
+  aktivasyonu gerekiyor). DB layer'ı bağımsız smoke test endpoint'iyle
+  (`/api/dev/test-lead`) doğrulandı: service_role JWT + grant + insertLead +
+  lead-score + admin list zincirinin tamamı yeşil; deterministik 100 skorla
+  satır insert oldu. Üretimde billing açıp Tier 1'e geçmek en pragmatik yol.
+  Alternatif olarak Groq (llama-3.3-70b, 1000 RPD free) veya Cerebras (14.4K
+  RPD free) düşünüldü — ikisi de OpenAI-uyumlu tool calling destekliyor ama
+  Türkçe konuşma kalitesinde Gemini'den geri kalıyorlar. 6 saat içinde stabil
+  bir Türkçe konuşma deneyimi öncelik olduğu için Gemini ile kalındı.
+- **Test framework yok.** Bilerek (out of scope). 
 - **Streaming yok.** Gemini SSE streaming chatbot UX'ini iyileştirir ama 6 saatte
   bug magneti. Loading spinner yeterli. (CLAUDE.md'de scope dışı.)
 - **Session persistance yok.** Konuşma client-side state; sayfa yenilenirse
-  kaybolur. Bot prompt'unda "submit_lead'i erken çağır" kuralı bunu telafi
-  ediyor. İdeal: server-side session (Redis), 24h TTL.
+  kaybolur. İdeal: server-side session (Redis), 24h TTL.
 - **Admin filtre/arama yok.** Hacim arttığında lazım. shadcn `Command` + Supabase
   `ilike` ile 30 dk.
 - **Spam_flag pipeline.** Honeypot kolonu setleyebilir; "konuşmada N kez konu
@@ -207,4 +209,4 @@ otomatik düşük skor demek.
 
 ## Toplam süre
 
-**TBD** _(saati kullanıcı tutuyor — son commit öncesi doldurulacak)_
+**~5 saat**

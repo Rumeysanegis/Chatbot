@@ -13,7 +13,10 @@
       "Bash(npm run *)",
       "Bash(git remote *)",
       "Bash(netstat -ano)",
-      "Bash(curl -sS -o /dev/null -w \"HTTP %{http_code}  size %{size_download}B  time %{time_total}s\\\\n\" http://localhost:3000/)"
+      "Bash(curl -sS -o /dev/null -w \"HTTP %{http_code}  size %{size_download}B  time %{time_total}s\\\\n\" http://localhost:3000/)",
+      "WebFetch(domain:ai.google.dev)",
+      "WebFetch(domain:console.groq.com)",
+      "WebFetch(domain:inference-docs.cerebras.ai)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Rumeysa\\Desktop"
